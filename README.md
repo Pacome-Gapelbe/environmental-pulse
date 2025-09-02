@@ -75,7 +75,7 @@ Most environmental dashboards focus on individual metrics (air quality OR fires 
 
 ### 1. Clone and Setup
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Pacome-Gapelbe/environmental-pulse.git
 cd environmental-pulse
 python -m venv env
 source env/bin/activate  # On Windows: env\Scripts\activate
