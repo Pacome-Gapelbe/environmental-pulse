@@ -2,11 +2,11 @@
 
 A real-time environmental monitoring system that aggregates air quality data, wildfire alerts, climate data, economic indicators, and water quality information across Africa, providing comprehensive environmental insights through an interactive dashboard.
 
-![alt text](/images/image-1.png)
+![alt text](/images/Air%20Quanlity.png)
 
-![alt text](/images/image-2.png)
+![alt text](/images/Economie.png)
 
-![alt text](/images/image-3.png)
+![alt text](/images/Water.png)
 
 ## 🚀 Project Overview
 
