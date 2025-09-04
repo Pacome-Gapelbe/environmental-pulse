@@ -1,13 +1,12 @@
 # 🌍 Global Environmental Pulse Platform
 
-A real-time environmental monitoring system that aggregates air quality data and wildfire alerts across Africa, providing unified environmental health insights through an interactive dashboard.
+A real-time environmental monitoring system that aggregates air quality data, wildfire alerts, climate data, economic indicators, and water quality information across Africa, providing comprehensive environmental insights through an interactive dashboard.
 
 ![alt text](/images/image-1.png)
 
 ![alt text](/images/image-2.png)
 
 ![alt text](/images/image-3.png)
-
 
 ## 🚀 Project Overview
 
@@ -16,10 +15,10 @@ This data engineering project demonstrates:
 - **Data processing and transformation** of heterogeneous environmental datasets
 - **Interactive visualization** with geographic mapping and analytics
 - **Automated data pipeline** architecture
-- **African-focused environmental monitoring** covering 18+ major cities
+- **African-focused environmental monitoring** covering multiple cities and regions
 
 ### Why This Project Matters
-Most environmental dashboards focus on individual metrics (air quality OR fires OR weather). This platform creates a **unified environmental health index** that combines multiple data sources to provide comprehensive environmental insights for African cities.
+This platform creates a **comprehensive environmental monitoring system** that combines multiple data sources to provide holistic environmental insights for African cities, enabling better decision-making and awareness.
 
 ## 🏗️ Architecture
 
@@ -29,26 +28,27 @@ Most environmental dashboards focus on individual metrics (air quality OR fires 
 ├─────────────────┤    ├──────────────────┤    ├─────────────────┤
 │ OpenWeatherMap  │    │ data_ingestion.py│    │ Streamlit UI    │
 │ NASA FIRMS      │    │ data_processing  │    │ Plotly Maps     │
-│ (Future: EPA,   │    │ Error Handling   │    │ Real-time Stats │
-│  WHO, etc.)     │    │ Data Validation  │    │ Environmental   │
-└─────────────────┘    └──────────────────┘    │ Health Score    │
-                                               └─────────────────┘
+│ Climate APIs    │    │ Error Handling   │    │ Real-time Stats │
+│ Economic Data   │    │ Data Validation  │    │ Multi-tab       │
+│ Water Quality   │    │                  │    │ Visualization   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
 ## 📋 Features
 
 ### Current Implementation
-- ✅ **Multi-source data ingestion**: Air quality (OpenWeatherMap) + Fire alerts (NASA FIRMS)
-- ✅ **Geographic focus**: 18 African cities from Nigeria to South Africa
-- ✅ **Interactive maps**: Real-time air quality and fire alert visualization
-- ✅ **Environmental scoring**: Custom algorithm ranking cities by environmental health
+- ✅ **Multi-source data ingestion**: Air quality, fire alerts, climate data, economic indicators, and water quality
+- ✅ **Geographic focus**: African cities and regions
+- ✅ **Interactive maps**: Real-time environmental data visualization
 - ✅ **Automated data collection**: Programmatic API calls with error handling
 - ✅ **Data persistence**: CSV-based data storage with timestamps
 
 ### Dashboard Components
 1. **Air Quality Monitor**: Global AQI mapping with PM2.5, PM10, and pollutant breakdowns
 2. **Fire Alert System**: NASA satellite fire detection with confidence ratings
-3. **Environmental Health Score**: Composite scoring system ranking cities (0-100 scale)
+3. **Climate Analysis**: Temperature and precipitation monitoring across cities
+4. **Economic Indicators**: GDP and economic trends visualization
+5. **Water Quality**: Water quality index tracking and analysis
 
 ## 🛠️ Tech Stack
 
@@ -64,14 +64,17 @@ Most environmental dashboards focus on individual metrics (air quality OR fires 
 - **Plotly Express**: Simplified plotting interface
 
 **Data Sources:**
-- **OpenWeatherMap API**: Air quality data for 18 African cities
+- **OpenWeatherMap API**: Air quality data
 - **NASA FIRMS**: Real-time satellite fire detection data
+- **Climate Data APIs**: Temperature and precipitation data
+- **Economic Data Sources**: GDP and economic indicators
+- **Water Quality APIs**: Water quality measurements
 
 ## 📦 Installation & Setup
 
 ### Prerequisites
 - Python 3.9 or higher
-- OpenWeatherMap API key (free tier: 1000 calls/day)
+- Required API keys for data sources
 
 ### 1. Clone and Setup
 ```bash
@@ -83,9 +86,11 @@ pip install -r requirements.txt
 ```
 
 ### 2. Environment Configuration
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory with your API keys:
 ```
 OPENWEATHER_API_KEY=your_api_key_here
+NASA_FIRMS_API_KEY=your_api_key_here
+# Add other API keys as needed
 ```
 
 ### 3. Create Directory Structure
@@ -125,29 +130,36 @@ environmental-pulse/
 ## 📊 Data Pipeline Details
 
 ### Data Sources
-1. **OpenWeatherMap Air Pollution API**
-   - Endpoint: Air Pollution Current Data
-   - Coverage: 18 African cities
-   - Refresh: Every 30 minutes
-   - Data: AQI, PM2.5, PM10, CO, NO₂, O₃, SO₂, NH₃
+1. **Air Quality Data**
+   - Sources: OpenWeatherMap and other air quality APIs
+   - Data: AQI, PM2.5, PM10, and other pollutants
+   - Coverage: Multiple African cities
 
-2. **NASA FIRMS Fire Data**
-   - Source: MODIS satellite fire detection
-   - Coverage: Africa (lat: -35 to 37, lon: -20 to 52)
-   - Refresh: Every 60 minutes
-   - Data: Fire coordinates, confidence, radiative power
+2. **Fire Alert Data**
+   - Source: NASA FIRMS and other fire detection systems
+   - Data: Fire coordinates, confidence levels, radiative power
+   - Coverage: African regions
+
+3. **Climate Data**
+   - Sources: Various climate APIs
+   - Data: Temperature, precipitation, solar radiation
+   - Coverage: Multiple cities
+
+4. **Economic Data**
+   - Sources: World Bank, IMF, and other economic databases
+   - Data: GDP, economic indicators, development metrics
+   - Coverage: African countries
+
+5. **Water Quality Data**
+   - Sources: Water quality monitoring APIs and databases
+   - Data: Water quality indices, contamination levels
+   - Coverage: African cities and regions
 
 ### Data Processing
-- **Geographic filtering**: Africa-focused fire data extraction
-- **Quality filtering**: High-confidence fire alerts (≥75% confidence)
+- **Geographic filtering**: Africa-focused data extraction
+- **Quality filtering**: Data validation and error handling
 - **Data validation**: Error handling for API failures
 - **Timestamp management**: ISO format timestamps for all data
-
-### Environmental Health Score Algorithm
-```python
-# Simple scoring: AQI inverse scale (1=excellent, 5=hazardous)
-env_score = (6 - aqi) * 20  # Converts to 0-100 scale
-```
 
 ## 🚀 Usage Examples
 
@@ -156,13 +168,19 @@ env_score = (6 - aqi) * 20  # Converts to 0-100 scale
 from src.data_ingestion import EnvironmentalDataCollector
 
 collector = EnvironmentalDataCollector()
-air_data, fire_data = collector.get_air_quality_data(cities), collector.get_nasa_fire_data()
+air_data = collector.get_air_quality_data(cities)
+fire_data = collector.get_fire_data()
+climate_data = collector.get_climate_data()
+economic_data = collector.get_economic_data()
+water_data = collector.get_water_quality_data()
 ```
 
 ### Dashboard Navigation
 1. **🌬️ Air Quality Tab**: Interactive map + city rankings + pollutant details
 2. **🔥 Fire Alerts Tab**: Real-time fire locations + statistics + confidence levels
-3. **📈 Environmental Score Tab**: City rankings + composite health scores
+3. **🌤️ Climate Tab**: Temperature and precipitation monitoring + trends
+4. **💰 Economic Tab**: GDP and economic indicators visualization
+5. **💧 Water Tab**: Water quality indices and analysis
 
 ## 📈 Future Enhancements (Roadmap)
 
@@ -173,10 +191,10 @@ air_data, fire_data = collector.get_air_quality_data(cities), collector.get_nasa
 - [ ] **Data quality monitoring**: Automated data validation and alerting
 
 ### Phase 3: Additional Data Sources
-- [ ] **Water quality**: WHO/EPA water monitoring APIs
-- [ ] **Weather integration**: Temperature, humidity, precipitation
 - [ ] **Satellite imagery**: Land use change detection
 - [ ] **Seismic data**: USGS earthquake monitoring
+- [ ] **Biodiversity data**: Wildlife and ecosystem monitoring
+- [ ] **Social indicators**: Population health and wellbeing metrics
 
 ### Phase 4: Production Deployment
 - [ ] **Cloud deployment**: AWS/GCP free tier hosting
@@ -196,7 +214,7 @@ This is a portfolio project, but suggestions and improvements are welcome!
 
 ## 📄 License
 
-This project is licensed under the Pacome License .
+This project is licensed under the Pacome License.
 
 ## 🙏 Acknowledgments
 
@@ -204,6 +222,7 @@ This project is licensed under the Pacome License .
 - **NASA FIRMS**: Fire Information for Resource Management System
 - **Streamlit**: Open-source app framework
 - **Plotly**: Interactive visualization library
+- **Various data providers**: For climate, economic, and water quality data
 
 ## 📞 Contact
 
@@ -211,4 +230,3 @@ This project is licensed under the Pacome License .
 **LinkedIn**: [www.linkedin.com/in/pacome-gapelbe-86516137b]  
 
 ---
-
