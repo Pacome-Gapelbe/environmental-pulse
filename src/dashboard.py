@@ -7,8 +7,45 @@ from datetime import datetime
 import glob
 import os
 import numpy as np
+import sys
 
-# Streamlit page configuration
+
+# Fix Python path for Streamlit environment
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+
+# Add both current directory and project root to path
+for path in [current_dir, project_root]:
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+from datetime import datetime
+import glob
+import numpy as np
+
+# Database import with proper path handling
+try:
+    # First try direct import (for script running)
+    from database import DatabaseManager
+    DB_AVAILABLE = True
+    print("✅ Database module imported successfully")
+except ImportError:
+    try:
+        # Fallback to src import (for module usage)
+        from src.database import DatabaseManager
+        DB_AVAILABLE = True
+        print("✅ Database module imported from src")
+    except ImportError as e:
+        DB_AVAILABLE = False
+        print(f"⚠️ Database module not available: {e}")
+except Exception as e:
+    DB_AVAILABLE = False
+    print(f"⚠️ Database error: {e}")
+
+
 st.set_page_config(
     page_title="Global Environmental Pulse",
     page_icon="🌍",
@@ -45,23 +82,74 @@ st.markdown("""
     .sidebar .sidebar-content {
         background: linear-gradient(180deg, #2c3e50, #34495e);
     }
+    .data-source-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    .db-badge {
+        background-color: #10b981;
+        color: white;
+    }
+    .csv-badge {
+        background-color: #f59e0b;
+        color: white;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 def load_latest_data():
-    """Load the most recent CSV files from data/raw/"""
+    """Load data from PostgreSQL database with CSV fallback"""
     data_files = {}
-    try:
-        for key in ['air', 'fire', 'climate', 'economic', 'water']:
-            files = glob.glob(f'data/raw/{key}_*.csv')
-            if files:
-                latest_file = max(files, key=os.path.getctime)
-                data_files[key] = pd.read_csv(latest_file)
+    data_source = "csv"  # Default to CSV
+    
+    # First try to load from PostgreSQL database if available
+    if DB_AVAILABLE:
+        try:
+            db_manager = DatabaseManager()
+            
+            # Load data from database
+            data_files['air'] = db_manager.get_latest_data('air_quality', 1000)
+            data_files['fire'] = db_manager.get_latest_data('fire_alerts', 1000)
+            data_files['climate'] = db_manager.get_latest_data('climate_data', 1000)
+            data_files['economic'] = db_manager.get_latest_data('economic_data', 1000)
+            data_files['water'] = db_manager.get_latest_data('water_quality', 1000)
+            
+            db_manager.close()
+            
+            # Check if we got any data from database
+            if any(not df.empty for df in data_files.values()):
+                data_source = "database"
+                print("✅ Loaded data from PostgreSQL database")
             else:
-                data_files[key] = pd.DataFrame()
-    except Exception as e:
-        st.error(f"Error loading data: {e}")
-    return data_files
+                print("⚠️ Database is empty, falling back to CSV")
+                
+        except Exception as e:
+            print(f"❌ Database load failed: {e}")
+    
+    # If database not available or empty, fallback to CSV files
+    if data_source == "csv" or all(df.empty for df in data_files.values() if data_files):
+        try:
+            for key in ['air', 'fire', 'climate', 'economic', 'water']:
+                files = glob.glob(f'data/raw/{key}_*.csv')
+                if files:
+                    latest_file = max(files, key=os.path.getctime)
+                    data_files[key] = pd.read_csv(latest_file)
+                    # Mark as fallback data
+                    data_files[key]._is_fallback = True
+                    print(f"✅ Loaded {key} data from CSV")
+                else:
+                    data_files[key] = pd.DataFrame()
+        except Exception as e:
+            print(f"❌ Error loading CSV data: {e}")
+    
+    # Add data source information to each dataframe
+    for key in data_files:
+        if not data_files[key].empty:
+            data_files[key].attrs['data_source'] = data_source
+    
+    return data_files, data_source
 
 def create_air_quality_map(df):
     if df.empty:
@@ -407,8 +495,10 @@ def main():
     )
     st.markdown("*Real-time environmental monitoring across Africa*")
     
-    # Load data
-    data = load_latest_data()
+    # Load data with progress indicator
+    with st.spinner("🌍 Loading environmental data..."):
+        data, data_source = load_latest_data()
+    
     air_df = data.get('air', pd.DataFrame())
     fire_df = data.get('fire', pd.DataFrame())
     climate_df = data.get('climate', pd.DataFrame())
@@ -423,6 +513,12 @@ def main():
     # Enhanced Sidebar
     with st.sidebar:
         st.header("📊 Dashboard Stats")
+        
+        # Data source badge
+        if data_source == "database":
+            st.markdown('<div class="data-source-badge db-badge">📊 PostgreSQL Database</div>', unsafe_allow_html=True)
+        else:
+            st.markdown('<div class="data-source-badge csv-badge">📁 CSV Files (Fallback)</div>', unsafe_allow_html=True)
         
         if not air_df.empty:
             st.metric("🏙️ Cities Monitored", len(air_df), delta=None)
@@ -579,6 +675,7 @@ def main():
     st.markdown(
         f"<div style='text-align: center; color: #7f8c8d;'>"
         f"🌍 Global Environmental Pulse Dashboard | "
+        f"Data Source: {'PostgreSQL Database' if data_source == 'database' else 'CSV Files'} | "
         f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         f"</div>", 
         unsafe_allow_html=True

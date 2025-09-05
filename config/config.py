@@ -1,3 +1,8 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # OpenWeather API (requires free API key)
 OPENWEATHER_BASE_URL = "http://api.openweathermap.org/data/2.5"
 OPENWEATHER_GEO_URL = "http://api.openweathermap.org/geo/1.0/direct"
@@ -61,3 +66,12 @@ FIRE_DATA_REFRESH = 60
 CLIMATE_DATA_REFRESH = 1440  # 24 hours
 ECONOMIC_DATA_REFRESH = 10080  # 7 days
 WATER_QUALITY_REFRESH = 1440  # 24 hours
+
+
+DB_CONFIG = {
+    'dbname': 'environmental_pulse',
+    'user': 'admin',
+    'password': os.getenv('DB_PASSWORD'),
+    'host': os.getenv('DB_HOST'), 
+    'port': os.getenv('DB_PORT')
+}
