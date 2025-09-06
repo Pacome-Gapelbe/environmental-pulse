@@ -117,7 +117,7 @@ environmental-pulse/
 │   └── processed/               # Cleaned, transformed data
 ├── src/
 │   ├── data_ingestion.py        # API data collection pipeline
-│   ├── data_processing.py       # Data cleaning & transformation
+│   ├── database.py              # Database
 │   └── dashboard.py             # Streamlit dashboard application
 ├── config/
 │   └── config.py                # Configuration settings
