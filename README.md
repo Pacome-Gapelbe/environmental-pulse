@@ -4,9 +4,12 @@ A real-time environmental monitoring system that aggregates air quality data, wi
 
 ![alt text](/images/Air%20Quanlity.png)
 
+![alt text](/images/fire.png)
+
 ![alt text](/images/Economie.png)
 
 ![alt text](/images/Water.png)
+
 
 ## 🚀 Project Overview
 
@@ -23,15 +26,15 @@ This platform creates a **comprehensive environmental monitoring system** that c
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Data Sources  │ -> │  Data Pipeline   │ -> │   Dashboard     │
-├─────────────────┤    ├──────────────────┤    ├─────────────────┤
-│ OpenWeatherMap  │    │ data_ingestion.py│    │ Streamlit UI    │
-│ NASA FIRMS      │    │ data_processing  │    │ Plotly Maps     │
-│ Climate APIs    │    │ Error Handling   │    │ Real-time Stats │
-│ Economic Data   │    │ Data Validation  │    │ Multi-tab       │
-│ Water Quality   │    │                  │    │ Visualization   │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Data Sources  │ -> │  Data Pipeline   │ -> │  PostgreSQL DB  │ -> │   Dashboard     │
+├─────────────────┤    ├──────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ OpenWeatherMap  │    │ data_ingestion.py│    │ air_quality     │    │ Streamlit UI    │
+│ NASA FIRMS      │    │ DatabaseManager  │    │ fire_alerts     │    │ Plotly Maps     │
+│ Climate APIs    │    │ Error Handling   │    │ climate_data    │    │ Real-time Stats │
+│ Economic Data   │    │ Data Validation  │    │ economic_data   │    │ Multi-tab       │
+│ Water Quality   │    │ Airflow DAGs     │    │ water_quality   │    │ Visualization   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
 ## 📋 Features
@@ -117,7 +120,7 @@ environmental-pulse/
 │   └── processed/               # Cleaned, transformed data
 ├── src/
 │   ├── data_ingestion.py        # API data collection pipeline
-│   ├── data_processing.py       # Data cleaning & transformation
+│   ├── database.py              # Data cleaning & transformation
 │   └── dashboard.py             # Streamlit dashboard application
 ├── config/
 │   └── config.py                # Configuration settings
@@ -187,7 +190,7 @@ water_data = collector.get_water_quality_data()
 ### Phase 2: Advanced Data Engineering
 - [ ] **Apache Airflow**: Automated scheduling and workflow management
 - [ ] **Apache Kafka**: Real-time streaming data pipeline
-- [ ] **DuckDB/PostgreSQL**: Proper database implementation
+- ✅ **DuckDB/PostgreSQL**: Proper database implementation
 - [ ] **Data quality monitoring**: Automated data validation and alerting
 
 ### Phase 3: Additional Data Sources
