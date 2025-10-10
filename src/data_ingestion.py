@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import os
 import sys  
 
-# Add /app to Python path so imports like `from config.config` work
+
 sys.path.insert(0, "/app")
 
 from dotenv import load_dotenv
@@ -20,9 +20,9 @@ load_dotenv()
 
 class EnvironmentalDataCollector:
     def __init__(self):
-        self.openweather_key = os.getenv("OPENWEATHER_API_KEY")  # Required
-        self.gfw_api_key = os.getenv("GFW_API_KEY", "")  # Optional
-        self.db_manager = DatabaseManager()  # Initialize database manager
+        self.openweather_key = os.getenv("OPENWEATHER_API_KEY")  
+        self.gfw_api_key = os.getenv("GFW_API_KEY", "") 
+        self.db_manager = DatabaseManager()  
 
     def get_air_quality_data(self, cities):
         """Fetch air quality data from OpenWeather for African cities"""
@@ -74,7 +74,7 @@ class EnvironmentalDataCollector:
             fire_df["timestamp"] = datetime.now().isoformat()
             fire_df = fire_df[fire_df["confidence"] >= 75]
             
-            # Rename columns to match our database schema
+            
             fire_df = fire_df.rename(columns={
                 "latitude": "latitude",
                 "longitude": "longitude",
@@ -172,7 +172,7 @@ class EnvironmentalDataCollector:
                                     "timestamp": datetime.now().isoformat()
                                 }
                                 economic_data.append(record)
-                                break  # Only latest value
+                                break  
 
             print(f"✅ Collected economic data for {len(economic_data)} records")
 
@@ -185,7 +185,7 @@ class EnvironmentalDataCollector:
         """Simulated water quality data for demonstration"""
         water_data = []
 
-        for city in MONITORED_CITIES[:5]:  # subset for demo
+        for city in MONITORED_CITIES[:5]:  
             try:
                 record = {
                     "city": city,
@@ -263,17 +263,14 @@ def main():
     print("🌍 Starting Environmental Data Collection...")
 
     try:
-        # Collect data from all sources
         air_quality_df = collector.get_air_quality_data(MONITORED_CITIES)
         fire_df = collector.get_nasa_fire_data()
         climate_df = collector.get_climate_data(MONITORED_CITIES)
         economic_df = collector.get_economic_data()
         water_df = collector.get_water_quality_data()
 
-        # Save to PostgreSQL database
         collector.save_all_data_to_db(air_quality_df, fire_df, climate_df, economic_df, water_df)
 
-        # Also save to CSV for backward compatibility
         save_data_to_csv(air_quality_df, fire_df, climate_df, economic_df, water_df)
 
         print("\n✅ Data collection and storage complete!")
@@ -285,8 +282,6 @@ def main():
         print(f"   Water Quality Records: {len(water_df)}")
 
     except Exception as e:
-        print(f"❌ Critical error in data collection: {e}")
-        # Even if database fails, try to save to CSV
         try:
             save_data_to_csv(air_quality_df, fire_df, climate_df, economic_df, water_df)
             print("💾 Data saved to CSV as fallback")
@@ -294,9 +289,7 @@ def main():
             print(f"❌ CSV fallback also failed: {csv_error}")
 
     finally:
-        # Always close the database connection
         collector.close_db_connection()
-
     return air_quality_df, fire_df, climate_df, economic_df, water_df
 
 

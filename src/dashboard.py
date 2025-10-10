@@ -10,11 +10,11 @@ import numpy as np
 import sys
 
 
-# Fix Python path for Streamlit environment
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
 
-# Add both current directory and project root to path
+
 for path in [current_dir, project_root]:
     if path not in sys.path:
         sys.path.insert(0, path)
@@ -26,15 +26,15 @@ from datetime import datetime
 import glob
 import numpy as np
 
-# Database import with proper path handling
+
 try:
-    # First try direct import (for script running)
+
     from database import DatabaseManager
     DB_AVAILABLE = True
     print("✅ Database module imported successfully")
 except ImportError:
     try:
-        # Fallback to src import (for module usage)
+
         from src.database import DatabaseManager
         DB_AVAILABLE = True
         print("✅ Database module imported from src")
@@ -53,7 +53,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
+
 st.markdown("""
 <style>
     .main-header {
@@ -104,12 +104,12 @@ def load_latest_data():
     data_files = {}
     data_source = "csv"  # Default to CSV
     
-    # First try to load from PostgreSQL database if available
+
     if DB_AVAILABLE:
         try:
             db_manager = DatabaseManager()
             
-            # Load data from database
+   
             data_files['air'] = db_manager.get_latest_data('air_quality', 1000)
             data_files['fire'] = db_manager.get_latest_data('fire_alerts', 1000)
             data_files['climate'] = db_manager.get_latest_data('climate_data', 1000)
@@ -118,7 +118,7 @@ def load_latest_data():
             
             db_manager.close()
             
-            # Check if we got any data from database
+   
             if any(not df.empty for df in data_files.values()):
                 data_source = "database"
                 print("✅ Loaded data from PostgreSQL database")
@@ -128,7 +128,7 @@ def load_latest_data():
         except Exception as e:
             print(f"❌ Database load failed: {e}")
     
-    # If database not available or empty, fallback to CSV files
+   
     if data_source == "csv" or all(df.empty for df in data_files.values() if data_files):
         try:
             for key in ['air', 'fire', 'climate', 'economic', 'water']:
@@ -144,7 +144,7 @@ def load_latest_data():
         except Exception as e:
             print(f"❌ Error loading CSV data: {e}")
     
-    # Add data source information to each dataframe
+
     for key in data_files:
         if not data_files[key].empty:
             data_files[key].attrs['data_source'] = data_source
@@ -157,7 +157,6 @@ def create_air_quality_map(df):
     color_map = {1: 'green', 2: 'yellow', 3: 'orange', 4: 'red', 5: 'purple'}
     df['color'] = df['aqi'].map(color_map)
     
-    # Use scatter_map instead of scatter_mapbox
     fig = px.scatter_map(
         df, lat='lat', lon='lon', hover_name='city',
         hover_data={'aqi': True, 'pm2_5': True, 'pm10': True},
@@ -178,7 +177,6 @@ def create_air_quality_charts(df):
     if df.empty:
         return None, None, None
     
-    # Create a clean copy
     df_clean = df.copy()
     
     # Handle missing values
@@ -186,7 +184,7 @@ def create_air_quality_charts(df):
         if col in df_clean.columns:
             df_clean[col] = df_clean[col].fillna(df_clean[col].mean())
     
-    # AQI Bar Chart
+
     fig1 = px.bar(
         df_clean.sort_values('aqi', ascending=True), 
         x='aqi', y='city', 
@@ -227,13 +225,12 @@ def create_fire_map(df):
     if len(df) > 500:
         df = df.sample(500)
     
-    # Clean the data for mapping
+
     df_clean = df.copy()
     df_clean['confidence'] = pd.to_numeric(df_clean['confidence'], errors='coerce').fillna(50)
     df_clean['frp'] = pd.to_numeric(df_clean['frp'], errors='coerce').fillna(1)
     df_clean = df_clean.dropna(subset=['confidence', 'frp'])
     
-    # Use scatter_map instead of scatter_mapbox
     fig = px.scatter_map(
         df_clean, lat='latitude', lon='longitude',
         hover_data={'confidence': True, 'frp': True},
@@ -260,17 +257,17 @@ def create_fire_charts(df):
         if col in df_clean.columns:
             df_clean[col] = pd.to_numeric(df_clean[col], errors='coerce')
     
-    # Remove rows with invalid values for visualization
+  
     df_clean = df_clean.dropna(subset=['confidence', 'frp'])
     
-    # Ensure values are within reasonable ranges
+
     df_clean['confidence'] = df_clean['confidence'].clip(0, 100)
     df_clean['frp'] = df_clean['frp'].clip(0.1, 1000)  # Ensure positive values
     
     if df_clean.empty:
         return None, None
     
-    # Confidence distribution
+
     fig1 = px.histogram(
         df_clean, x='confidence', nbins=20,
         title="🎯 Fire Detection Confidence Distribution",
@@ -278,7 +275,6 @@ def create_fire_charts(df):
     )
     fig1.update_layout(height=300)
     
-    # FRP vs Confidence
     fig2 = px.scatter(
         df_clean, x='confidence', y='frp',
         title="🔥 Fire Radiative Power vs Detection Confidence",
@@ -297,10 +293,10 @@ def create_climate_map(df):
     df_clean['precipitation'] = df_clean['precipitation'].fillna(0)
     df_clean['temperature_2m'] = df_clean['temperature_2m'].fillna(df_clean['temperature_2m'].mean())
     
-    # Ensure precipitation values are positive for size (add small constant to avoid zero size)
+
     df_clean['precipitation_size'] = df_clean['precipitation'] + 0.1
     
-    # Use scatter_map instead of scatter_mapbox
+
     fig = px.scatter_map(
         df_clean,
         lat='lat',
@@ -328,10 +324,9 @@ def create_climate_charts(df):
     if df.empty:
         return None, None, None
     
-    # Create a clean copy of the dataframe
+ 
     df_clean = df.copy()
     
-    # Handle missing values for visualization
     df_clean['temperature_2m'] = df_clean['temperature_2m'].fillna(df_clean['temperature_2m'].mean())
     df_clean['precipitation'] = df_clean['precipitation'].fillna(0)
     
@@ -359,8 +354,7 @@ def create_climate_charts(df):
     )
     fig2.update_layout(height=400)
     
-    # Temperature vs Precipitation scatter
-    # Handle solar radiation data if it exists and has valid values
+
     if 'solar_radiation' in df_clean.columns:
         # Fill NaN values with mean or 0, then ensure all values are positive
         df_clean['solar_radiation'] = df_clean['solar_radiation'].fillna(df_clean['solar_radiation'].mean())
@@ -483,7 +477,7 @@ def create_water_charts(df):
     return None, None
 
 def main():
-    # Header - Fixed to separate the emoji from the gradient text
+
     st.markdown(
         '''
         <h1 class="main-header">
@@ -510,7 +504,6 @@ def main():
         st.code("python src/data_ingestion.py")
         return
 
-    # Enhanced Sidebar
     with st.sidebar:
         st.header("📊 Dashboard Stats")
         
@@ -538,7 +531,6 @@ def main():
         st.markdown("### 🔄 Last Updated")
         st.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    # Main content with tabs - using original styling
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "🌬️ Air Quality", "🔥 Fire Alerts", "🌤️ Climate", 
         "💰 Economic", "💧 Water"
@@ -565,7 +557,6 @@ def main():
                 
                 st.plotly_chart(air_charts[2], use_container_width=True)
             
-            # Data table (smaller)
             with st.expander("📋 View Raw Data"):
                 st.dataframe(air_df[['city','aqi','pm2_5','pm10','timestamp']], use_container_width=True)
         else:
@@ -590,7 +581,6 @@ def main():
                 with col2:
                     st.plotly_chart(fire_charts[1], use_container_width=True)
             
-            # Summary metrics
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("🔥 Total Alerts", len(fire_df))

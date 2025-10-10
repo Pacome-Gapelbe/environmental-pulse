@@ -287,7 +287,6 @@ class DatabaseManager:
                 )
                 records.append(record)
             
-            # Use ON CONFLICT DO NOTHING to avoid duplicates
             query = """
                 INSERT INTO climate_data 
                 (city, lat, lon, timestamp, temperature_2m, precipitation, solar_radiation)
@@ -337,7 +336,7 @@ class DatabaseManager:
                 )
                 records.append(record)
             
-            # Use ON CONFLICT DO NOTHING to avoid duplicates
+    
             query = """
                 INSERT INTO economic_data 
                 (country_code, country_name, indicator_code, indicator_name, value, year, timestamp)
@@ -383,7 +382,7 @@ class DatabaseManager:
                 )
                 records.append(record)
             
-            # Use ON CONFLICT DO NOTHING to avoid duplicates
+
             query = """
                 INSERT INTO water_quality 
                 (city, timestamp, ph, turbidity, dissolved_oxygen, water_quality_index)
@@ -471,7 +470,6 @@ def test_database_connection():
 
 
 if __name__ == "__main__":
-    # Test the database connection when run directly
     print("🧪 Testing Database Connection...")
     success = test_database_connection()
     if success:

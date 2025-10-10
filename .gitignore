@@ -5,3 +5,5 @@ data/raw/*.json
 data/raw/*.csv
 .DS_Store
 env/
+logs/
+logs/*.log
