@@ -69,9 +69,9 @@ WATER_QUALITY_REFRESH = 1440  # 24 hours
 
 
 DB_CONFIG = {
-    'dbname': 'environmental_pulse',
-    'user': 'admin',
-    'password': os.getenv('DB_PASSWORD'),
-    'host': os.getenv('DB_HOST'), 
-    'port': os.getenv('DB_PORT')
+    'dbname': os.getenv('DB_NAME', 'envpulse'),
+    'user': os.getenv('DB_USER', 'postgres'),
+    'password': os.getenv('DB_PASSWORD', 'postgres'),
+    'host': os.getenv('DB_HOST', 'postgres'),
+    'port': int(os.getenv('DB_PORT', 5432))
 }

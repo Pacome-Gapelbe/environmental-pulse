@@ -1,0 +1,28 @@
+[2025-10-10T10:00:03.624+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: environmental_data_pipeline.check_database_connection scheduled__2025-10-10T09:00:00+00:00 [queued]>
+[2025-10-10T10:00:03.653+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: environmental_data_pipeline.check_database_connection scheduled__2025-10-10T09:00:00+00:00 [queued]>
+[2025-10-10T10:00:03.654+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 2
+[2025-10-10T10:00:03.703+0000] {taskinstance.py:2217} INFO - Executing <Task(PythonOperator): check_database_connection> on 2025-10-10 09:00:00+00:00
+[2025-10-10T10:00:03.711+0000] {standard_task_runner.py:60} INFO - Started process 1048 to run task
+[2025-10-10T10:00:03.744+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'environmental_data_pipeline', 'check_database_connection', 'scheduled__2025-10-10T09:00:00+00:00', '--job-id', '22', '--raw', '--subdir', 'DAGS_FOLDER/environmental_data_pipeline.py', '--cfg-path', '/tmp/tmpd3m8lrdl']
+[2025-10-10T10:00:03.755+0000] {standard_task_runner.py:88} INFO - Job 22: Subtask check_database_connection
+[2025-10-10T10:00:03.888+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/***/settings.py:194 DeprecationWarning: The sql_alchemy_conn option in [core] has been moved to the sql_alchemy_conn option in [database] - the old setting has been used, but please update your config.
+[2025-10-10T10:00:04.008+0000] {task_command.py:423} INFO - Running <TaskInstance: environmental_data_pipeline.check_database_connection scheduled__2025-10-10T09:00:00+00:00 [running]> on host 0f3d78d9a7de
+[2025-10-10T10:00:04.649+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='environmental_team' AIRFLOW_CTX_DAG_ID='environmental_data_pipeline' AIRFLOW_CTX_TASK_ID='check_database_connection' AIRFLOW_CTX_EXECUTION_DATE='2025-10-10T09:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-10-10T09:00:00+00:00'
+[2025-10-10T10:00:07.534+0000] {database.py:27} INFO - ✅ Connected to PostgreSQL database
+[2025-10-10T10:00:07.611+0000] {database.py:140} INFO - ✅ Table already exists: air_quality
+[2025-10-10T10:00:07.618+0000] {database.py:140} INFO - ✅ Table already exists: fire_alerts
+[2025-10-10T10:00:07.620+0000] {database.py:140} INFO - ✅ Table already exists: climate_data
+[2025-10-10T10:00:07.623+0000] {database.py:140} INFO - ✅ Table already exists: economic_data
+[2025-10-10T10:00:07.628+0000] {database.py:140} INFO - ✅ Table already exists: water_quality
+[2025-10-10T10:00:07.628+0000] {database.py:165} INFO - ✅ All tables are accessible
+[2025-10-10T10:00:07.693+0000] {logging_mixin.py:188} INFO - ✅ Database connection successful!
+[2025-10-10T10:00:07.695+0000] {logging_mixin.py:188} INFO -    air_quality: 171 records
+[2025-10-10T10:00:07.696+0000] {logging_mixin.py:188} INFO -    fire_alerts: 9000 records
+[2025-10-10T10:00:07.696+0000] {logging_mixin.py:188} INFO -    climate_data: 171 records
+[2025-10-10T10:00:07.696+0000] {logging_mixin.py:188} INFO -    economic_data: 48 records
+[2025-10-10T10:00:07.696+0000] {logging_mixin.py:188} INFO -    water_quality: 45 records
+[2025-10-10T10:00:07.696+0000] {database.py:446} INFO - ✅ Database connection closed
+[2025-10-10T10:00:07.697+0000] {python.py:202} INFO - Done. Returned value was: True
+[2025-10-10T10:00:07.756+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=environmental_data_pipeline, task_id=check_database_connection, execution_date=20251010T090000, start_date=20251010T100003, end_date=20251010T100007
+[2025-10-10T10:00:07.819+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2025-10-10T10:00:07.875+0000] {taskinstance.py:3312} INFO - 1 downstream tasks scheduled from follow-on schedule check

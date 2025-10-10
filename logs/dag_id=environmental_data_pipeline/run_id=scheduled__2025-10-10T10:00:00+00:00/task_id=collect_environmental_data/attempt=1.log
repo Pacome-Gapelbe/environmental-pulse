@@ -1,0 +1,94 @@
+[2025-10-10T11:00:09.102+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: environmental_data_pipeline.collect_environmental_data scheduled__2025-10-10T10:00:00+00:00 [queued]>
+[2025-10-10T11:00:09.149+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: environmental_data_pipeline.collect_environmental_data scheduled__2025-10-10T10:00:00+00:00 [queued]>
+[2025-10-10T11:00:09.149+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 2
+[2025-10-10T11:00:09.208+0000] {taskinstance.py:2217} INFO - Executing <Task(PythonOperator): collect_environmental_data> on 2025-10-10 10:00:00+00:00
+[2025-10-10T11:00:09.223+0000] {standard_task_runner.py:60} INFO - Started process 1642 to run task
+[2025-10-10T11:00:09.245+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'environmental_data_pipeline', 'collect_environmental_data', 'scheduled__2025-10-10T10:00:00+00:00', '--job-id', '25', '--raw', '--subdir', 'DAGS_FOLDER/environmental_data_pipeline.py', '--cfg-path', '/tmp/tmp1r8xubbi']
+[2025-10-10T11:00:09.256+0000] {standard_task_runner.py:88} INFO - Job 25: Subtask collect_environmental_data
+[2025-10-10T11:00:09.538+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/***/settings.py:194 DeprecationWarning: The sql_alchemy_conn option in [core] has been moved to the sql_alchemy_conn option in [database] - the old setting has been used, but please update your config.
+[2025-10-10T11:00:09.724+0000] {task_command.py:423} INFO - Running <TaskInstance: environmental_data_pipeline.collect_environmental_data scheduled__2025-10-10T10:00:00+00:00 [running]> on host 0f3d78d9a7de
+[2025-10-10T11:00:09.956+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='environmental_team' AIRFLOW_CTX_DAG_ID='environmental_data_pipeline' AIRFLOW_CTX_TASK_ID='collect_environmental_data' AIRFLOW_CTX_EXECUTION_DATE='2025-10-10T10:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-10-10T10:00:00+00:00'
+[2025-10-10T11:00:11.341+0000] {logging_mixin.py:188} INFO - Starting data collection...
+[2025-10-10T11:00:11.433+0000] {database.py:27} INFO - ✅ Connected to PostgreSQL database
+[2025-10-10T11:00:11.444+0000] {database.py:140} INFO - ✅ Table already exists: air_quality
+[2025-10-10T11:00:11.446+0000] {database.py:140} INFO - ✅ Table already exists: fire_alerts
+[2025-10-10T11:00:11.448+0000] {database.py:140} INFO - ✅ Table already exists: climate_data
+[2025-10-10T11:00:11.449+0000] {database.py:140} INFO - ✅ Table already exists: economic_data
+[2025-10-10T11:00:11.451+0000] {database.py:140} INFO - ✅ Table already exists: water_quality
+[2025-10-10T11:00:11.451+0000] {database.py:165} INFO - ✅ All tables are accessible
+[2025-10-10T11:00:11.451+0000] {logging_mixin.py:188} INFO - 🌍 Starting Environmental Data Collection...
+[2025-10-10T11:00:13.908+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Lagos
+[2025-10-10T11:00:16.005+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Abuja
+[2025-10-10T11:00:18.145+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Port Harcourt
+[2025-10-10T11:00:29.107+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Accra
+[2025-10-10T11:00:31.072+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Kumasi
+[2025-10-10T11:00:33.042+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Lomé
+[2025-10-10T11:00:35.317+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Yaoundé
+[2025-10-10T11:00:37.290+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Douala
+[2025-10-10T11:00:39.472+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for N'Djamena
+[2025-10-10T11:00:41.468+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Kinshasa
+[2025-10-10T11:00:43.507+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Lubumbashi
+[2025-10-10T11:00:45.725+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Goma
+[2025-10-10T11:00:47.768+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Kigali
+[2025-10-10T11:00:49.941+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Nairobi
+[2025-10-10T11:00:51.887+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Addis Ababa
+[2025-10-10T11:00:53.913+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Cape Town
+[2025-10-10T11:00:56.137+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Johannesburg
+[2025-10-10T11:00:55.648+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Dakar
+[2025-10-10T11:00:57.701+0000] {logging_mixin.py:188} INFO - ✅ Collected air quality for Cairo
+[2025-10-10T11:01:02.663+0000] {logging_mixin.py:188} INFO - ✅ Collected 1000 African fire alerts
+[2025-10-10T11:01:06.661+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Lagos
+[2025-10-10T11:01:09.687+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Abuja
+[2025-10-10T11:01:12.798+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Port Harcourt
+[2025-10-10T11:01:15.438+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Accra
+[2025-10-10T11:01:19.068+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Kumasi
+[2025-10-10T11:01:22.085+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Lomé
+[2025-10-10T11:01:25.173+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Yaoundé
+[2025-10-10T11:01:25.584+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Douala
+[2025-10-10T11:01:28.886+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for N'Djamena
+[2025-10-10T11:01:32.216+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Kinshasa
+[2025-10-10T11:01:35.255+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Lubumbashi
+[2025-10-10T11:01:37.580+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Goma
+[2025-10-10T11:01:40.706+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Kigali
+[2025-10-10T11:01:43.279+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Nairobi
+[2025-10-10T11:01:46.177+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Addis Ababa
+[2025-10-10T11:01:49.184+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Cape Town
+[2025-10-10T11:01:51.470+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Johannesburg
+[2025-10-10T11:01:54.091+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Dakar
+[2025-10-10T11:01:55.025+0000] {logging_mixin.py:188} INFO - ✅ Collected climate data for Cairo
+[2025-10-10T11:02:17.431+0000] {logging_mixin.py:188} INFO - ✅ Collected economic data for 48 records
+[2025-10-10T11:02:17.432+0000] {logging_mixin.py:188} INFO - ✅ Collected simulated water quality for Lagos
+[2025-10-10T11:02:17.433+0000] {logging_mixin.py:188} INFO - ✅ Collected simulated water quality for Abuja
+[2025-10-10T11:02:17.433+0000] {logging_mixin.py:188} INFO - ✅ Collected simulated water quality for Port Harcourt
+[2025-10-10T11:02:17.433+0000] {logging_mixin.py:188} INFO - ✅ Collected simulated water quality for Accra
+[2025-10-10T11:02:17.433+0000] {logging_mixin.py:188} INFO - ✅ Collected simulated water quality for Kumasi
+[2025-10-10T11:02:17.461+0000] {database.py:210} INFO - ✅ Inserted 19 air quality records
+[2025-10-10T11:02:17.656+0000] {database.py:256} INFO - ✅ Inserted 100 fire alert records
+[2025-10-10T11:02:17.667+0000] {database.py:302} INFO - ✅ Inserted 19 climate records
+[2025-10-10T11:02:17.684+0000] {database.py:352} INFO - ✅ Inserted 0 economic records
+[2025-10-10T11:02:17.700+0000] {database.py:398} INFO - ✅ Inserted 5 water quality records
+[2025-10-10T11:02:17.701+0000] {logging_mixin.py:188} INFO - ✅ All data successfully saved to PostgreSQL database
+[2025-10-10T11:02:17.706+0000] {logging_mixin.py:188} INFO - 💾 Saved air quality data to CSV: 19 records
+[2025-10-10T11:02:17.717+0000] {logging_mixin.py:188} INFO - 💾 Saved fire data to CSV: 1000 records
+[2025-10-10T11:02:17.718+0000] {logging_mixin.py:188} INFO - 💾 Saved climate data to CSV: 19 records
+[2025-10-10T11:02:17.720+0000] {logging_mixin.py:188} INFO - 💾 Saved economic data to CSV: 48 records
+[2025-10-10T11:02:17.721+0000] {logging_mixin.py:188} INFO - 💾 Saved water quality data to CSV: 5 records
+[2025-10-10T11:02:17.722+0000] {logging_mixin.py:188} INFO - 
+✅ Data collection and storage complete!
+[2025-10-10T11:02:17.722+0000] {logging_mixin.py:188} INFO - 📊 Data Summary:
+[2025-10-10T11:02:17.722+0000] {logging_mixin.py:188} INFO -    Air Quality Records: 19
+[2025-10-10T11:02:17.722+0000] {logging_mixin.py:188} INFO -    Fire Alert Records: 1000
+[2025-10-10T11:02:17.723+0000] {logging_mixin.py:188} INFO -    Climate Records: 19
+[2025-10-10T11:02:17.723+0000] {logging_mixin.py:188} INFO -    Economic Records: 48
+[2025-10-10T11:02:17.723+0000] {logging_mixin.py:188} INFO -    Water Quality Records: 5
+[2025-10-10T11:02:17.724+0000] {database.py:446} INFO - ✅ Database connection closed
+[2025-10-10T11:02:17.724+0000] {logging_mixin.py:188} INFO - ✅ Data collection successful!
+[2025-10-10T11:02:17.724+0000] {logging_mixin.py:188} INFO -    Air Quality: 19 records
+[2025-10-10T11:02:17.724+0000] {logging_mixin.py:188} INFO -    Fire Alerts: 1000 records
+[2025-10-10T11:02:17.725+0000] {logging_mixin.py:188} INFO -    Climate Data: 19 records
+[2025-10-10T11:02:17.725+0000] {logging_mixin.py:188} INFO -    Economic Data: 48 records
+[2025-10-10T11:02:17.725+0000] {logging_mixin.py:188} INFO -    Water Quality: 5 records
+[2025-10-10T11:02:17.726+0000] {python.py:202} INFO - Done. Returned value was: True
+[2025-10-10T11:02:17.782+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=environmental_data_pipeline, task_id=collect_environmental_data, execution_date=20251010T100000, start_date=20251010T110009, end_date=20251010T110217
+[2025-10-10T11:02:17.842+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2025-10-10T11:02:17.875+0000] {taskinstance.py:3312} INFO - 0 downstream tasks scheduled from follow-on schedule check

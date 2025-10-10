@@ -1,0 +1,30 @@
+[2025-10-10T08:14:12.291+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: environmental_data_pipeline.check_database_connection scheduled__2025-10-10T07:00:00+00:00 [queued]>
+[2025-10-10T08:14:12.300+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: environmental_data_pipeline.check_database_connection scheduled__2025-10-10T07:00:00+00:00 [queued]>
+[2025-10-10T08:14:12.300+0000] {taskinstance.py:2193} INFO - Starting attempt 4 of 4
+[2025-10-10T08:14:12.316+0000] {taskinstance.py:2217} INFO - Executing <Task(PythonOperator): check_database_connection> on 2025-10-10 07:00:00+00:00
+[2025-10-10T08:14:12.324+0000] {standard_task_runner.py:60} INFO - Started process 285 to run task
+[2025-10-10T08:14:12.336+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'environmental_data_pipeline', 'check_database_connection', 'scheduled__2025-10-10T07:00:00+00:00', '--job-id', '13', '--raw', '--subdir', 'DAGS_FOLDER/environmental_data_pipeline.py', '--cfg-path', '/tmp/tmpixj6w8bi']
+[2025-10-10T08:14:12.341+0000] {standard_task_runner.py:88} INFO - Job 13: Subtask check_database_connection
+[2025-10-10T08:14:12.410+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/***/settings.py:194 DeprecationWarning: The sql_alchemy_conn option in [core] has been moved to the sql_alchemy_conn option in [database] - the old setting has been used, but please update your config.
+[2025-10-10T08:14:12.512+0000] {task_command.py:423} INFO - Running <TaskInstance: environmental_data_pipeline.check_database_connection scheduled__2025-10-10T07:00:00+00:00 [running]> on host 89a2ea75018f
+[2025-10-10T08:14:12.693+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='environmental_team' AIRFLOW_CTX_DAG_ID='environmental_data_pipeline' AIRFLOW_CTX_TASK_ID='check_database_connection' AIRFLOW_CTX_EXECUTION_DATE='2025-10-10T07:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='4' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-10-10T07:00:00+00:00'
+[2025-10-10T08:14:13.356+0000] {logging_mixin.py:188} INFO - ❌ Database connection failed: No module named 'config.config'; 'config' is not a package
+[2025-10-10T08:14:13.357+0000] {taskinstance.py:2731} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/models/taskinstance.py", line 444, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/models/taskinstance.py", line 414, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/operators/python.py", line 200, in execute
+    return_value = self.execute_callable()
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/operators/python.py", line 217, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+  File "/opt/airflow/dags/environmental_data_pipeline.py", line 42, in check_database_connection
+    from src.database import DatabaseManager
+  File "/opt/airflow/environmental-pulse/src/database.py", line 8, in <module>
+    from config.config import DB_CONFIG
+ModuleNotFoundError: No module named 'config.config'; 'config' is not a package
+[2025-10-10T08:14:13.372+0000] {taskinstance.py:1149} INFO - Marking task as FAILED. dag_id=environmental_data_pipeline, task_id=check_database_connection, execution_date=20251010T070000, start_date=20251010T081412, end_date=20251010T081413
+[2025-10-10T08:14:13.393+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 13 for task check_database_connection (No module named 'config.config'; 'config' is not a package; 285)
+[2025-10-10T08:14:13.441+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2025-10-10T08:14:13.473+0000] {taskinstance.py:3312} INFO - 0 downstream tasks scheduled from follow-on schedule check

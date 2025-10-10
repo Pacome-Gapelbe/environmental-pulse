@@ -76,58 +76,68 @@ This platform creates a **comprehensive environmental monitoring system** that c
 ## 📦 Installation & Setup
 
 ### Prerequisites
-- Python 3.9 or higher
+- Docker and Docker Compose installed
 - Required API keys for data sources
 
-### 1. Clone and Setup
+### 1. Clone the repository
 ```bash
 git clone https://github.com/Pacome-Gapelbe/environmental-pulse.git
 cd environmental-pulse
-python -m venv env
-source env/bin/activate  # On Windows: env\Scripts\activate
-pip install -r requirements.txt
-```
 
-### 2. Environment Configuration
-Create a `.env` file in the root directory with your API keys:
-```
+2. Configure environment variables
+Create a .env file in the root directory with your API keys:
 OPENWEATHER_API_KEY=your_api_key_here
 NASA_FIRMS_API_KEY=your_api_key_here
-# Add other API keys as needed
-```
 
-### 3. Create Directory Structure
-```bash
-mkdir -p data/raw data/processed
-```
+3. Run the project with Docker Compose
+Build and start all services:
+docker compose up --build
+Or run in detached mode:
+docker compose up -d
 
-### 4. Run Data Collection
-```bash
-python src/data_ingestion.py
-```
+4. Verify running containers
+docker ps
 
-### 5. Launch Dashboard
-```bash
-streamlit run src/dashboard.py
-```
+5. Stop all containers
+docker-compose down
+
+6. Access the services
+Streamlit Dashboard: http://127.0.0.1:8501/
+Airflow Webserver: http://127.0.0.1:8881/
+Default username: airflow
+Default password: airflow
+
+
 
 ## 🗂️ Project Structure
 
 ```
-environmental-pulse/
-├── data/
-│   ├── raw/                     # Raw API data (CSV files)
-│   └── processed/               # Cleaned, transformed data
-├── src/
-│   ├── data_ingestion.py        # API data collection pipeline
-│   ├── database.py              # Data cleaning & transformation
-│   └── dashboard.py             # Streamlit dashboard application
+ENVIRONMENTAL-PULSE/
 ├── config/
-│   └── config.py                # Configuration settings
-├── .env                         # Environment variables (API keys)
-├── .gitignore                   # Git ignore rules
-├── requirements.txt             # Python dependencies
-└── README.md                    # Project documentation
+│   ├── __pycache__/
+│   ├── __init__.py
+│   └── config.py
+├── dags/
+│   ├── environmental_data_pipeline.py
+│   └── test_environmental_dag.py
+├── data/
+│   ├── processed/
+│   └── raw/
+├── images/
+├── logs/
+├── plugins/
+├── src/
+│   ├── __pycache__/
+│   ├── dashboard.py
+│   ├── data_ingestion.py
+│   └── database.py
+├── .env
+├── .gitignore
+├── docker-compose.yml
+├── Dockerfile
+├── init-environmental-db.sql
+├── README.md
+└── requirements.txt
 ```
 
 ## 📊 Data Pipeline Details
@@ -188,22 +198,22 @@ water_data = collector.get_water_quality_data()
 ## 📈 Future Enhancements (Roadmap)
 
 ### Phase 2: Advanced Data Engineering
-- [ ] **Apache Airflow**: Automated scheduling and workflow management
-- [ ] **Apache Kafka**: Real-time streaming data pipeline
+- ✅ **Apache Airflow**: Automated scheduling and workflow management
 - ✅ **DuckDB/PostgreSQL**: Proper database implementation
-- [ ] **Data quality monitoring**: Automated data validation and alerting
+- ❌ **Apache Kafka**: Real-time streaming data pipeline
+- ❌ **Data quality monitoring**: Automated data validation and alerting
 
 ### Phase 3: Additional Data Sources
-- [ ] **Satellite imagery**: Land use change detection
-- [ ] **Seismic data**: USGS earthquake monitoring
-- [ ] **Biodiversity data**: Wildlife and ecosystem monitoring
-- [ ] **Social indicators**: Population health and wellbeing metrics
+- ❌ **Satellite imagery**: Land use change detection
+- ❌ **Seismic data**: USGS earthquake monitoring
+- ❌ **Biodiversity data**: Wildlife and ecosystem monitoring
+- ❌ **Social indicators**: Population health and wellbeing metrics
 
 ### Phase 4: Production Deployment
-- [ ] **Cloud deployment**: AWS/GCP free tier hosting
-- [ ] **RESTful API**: Public API endpoints for data access
-- [ ] **Docker containerization**: Portable deployment
-- [ ] **CI/CD pipeline**: Automated testing and deployment
+- ❌ **Cloud deployment**: AWS/GCP free tier hosting
+- ❌ **RESTful API**: Public API endpoints for data access
+- ✅ **Docker containerization**: Portable deployment
+- ❌ **CI/CD pipeline**: Automated testing and deployment
 
 ## 🤝 Contributing
 

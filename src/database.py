@@ -1,6 +1,10 @@
 import psycopg2
 from psycopg2.extras import execute_values
 import pandas as pd
+import sys
+import os
+
+sys.path.insert(0, "/opt/airflow/environmental-pulse")
 from config.config import DB_CONFIG
 import logging
 from datetime import datetime

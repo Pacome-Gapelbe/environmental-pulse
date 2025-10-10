@@ -2,6 +2,11 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 import os
+import sys  
+
+# Add /app to Python path so imports like `from config.config` work
+sys.path.insert(0, "/app")
+
 from dotenv import load_dotenv
 from config.config import (
     MONITORED_CITIES, RAW_DATA_PATH, NASA_FIRE_URL,
@@ -11,6 +16,7 @@ from config.config import (
 from src.database import DatabaseManager
 
 load_dotenv()
+
 
 class EnvironmentalDataCollector:
     def __init__(self):
