@@ -108,36 +108,34 @@ Default username: airflow
 Default password: airflow
 
 
-
-## 🗂️ Project Structure
-
+## Project Structure
 ```
-ENVIRONMENTAL-PULSE/
-├── config/
-│   ├── __pycache__/
-│   ├── __init__.py
-│   └── config.py
-├── dags/
-│   ├── environmental_data_pipeline.py
-│   └── test_environmental_dag.py
-├── data/
-│   ├── processed/
-│   └── raw/
-├── images/
-├── logs/
-├── plugins/
-├── src/
-│   ├── __pycache__/
-│   ├── dashboard.py
-│   ├── data_ingestion.py
-│   └── database.py
-├── .env
-├── .gitignore
-├── docker-compose.yml
-├── Dockerfile
-├── init-environmental-db.sql
-├── README.md
-└── requirements.txt
+   ENVIRONMENTAL-PULSE/
+   ├── config/
+   │   ├── __pycache__/
+   │   ├── __init__.py
+   │   └── config.py
+   ├── dags/
+   │   ├── environmental_data_pipeline.py
+   │   └── test_environmental_dag.py
+   ├── data/
+   │   ├── processed/
+   │   └── raw/
+   ├── images/
+   ├── logs/
+   ├── plugins/
+   ├── src/
+   │   ├── __pycache__/
+   │   ├── dashboard.py
+   │   ├── data_ingestion.py
+   │   └── database.py
+   ├── .env
+   ├── .gitignore
+   ├── docker-compose.yml
+   ├── Dockerfile
+   ├── init-environmental-db.sql
+   ├── README.md
+   └── requirements.txt
 ```
 
 ## 📊 Data Pipeline Details
