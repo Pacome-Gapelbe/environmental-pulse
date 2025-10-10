@@ -109,7 +109,6 @@ Default password: airflow
 
 
 ## Project Structure
-```
    ENVIRONMENTAL-PULSE/
    ├── config/
    │   ├── __pycache__/
@@ -136,7 +135,7 @@ Default password: airflow
    ├── init-environmental-db.sql
    ├── README.md
    └── requirements.txt
-```
+
 
 ## 📊 Data Pipeline Details
 
