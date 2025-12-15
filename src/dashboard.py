@@ -8,33 +8,21 @@ import glob
 import os
 import numpy as np
 import sys
-
-
+import time
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
-
 
 for path in [current_dir, project_root]:
     if path not in sys.path:
         sys.path.insert(0, path)
 
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-from datetime import datetime
-import glob
-import numpy as np
-
-
 try:
-
     from database import DatabaseManager
     DB_AVAILABLE = True
     print("✅ Database module imported successfully")
 except ImportError:
     try:
-
         from src.database import DatabaseManager
         DB_AVAILABLE = True
         print("✅ Database module imported from src")
@@ -45,7 +33,6 @@ except Exception as e:
     DB_AVAILABLE = False
     print(f"⚠️ Database error: {e}")
 
-
 st.set_page_config(
     page_title="Global Environmental Pulse",
     page_icon="🌍",
@@ -53,7 +40,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
+# Custom CSS with refresh indicator
 st.markdown("""
 <style>
     .main-header {
@@ -96,20 +83,31 @@ st.markdown("""
         background-color: #f59e0b;
         color: white;
     }
+    .refresh-indicator {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        color: white;
+        text-align: center;
+        margin: 1rem 0;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
 def load_latest_data():
     """Load data from PostgreSQL database with CSV fallback"""
     data_files = {}
-    data_source = "csv"  # Default to CSV
+    data_source = "csv"
     
-
     if DB_AVAILABLE:
         try:
             db_manager = DatabaseManager()
             
-   
             data_files['air'] = db_manager.get_latest_data('air_quality', 1000)
             data_files['fire'] = db_manager.get_latest_data('fire_alerts', 1000)
             data_files['climate'] = db_manager.get_latest_data('climate_data', 1000)
@@ -118,7 +116,6 @@ def load_latest_data():
             
             db_manager.close()
             
-   
             if any(not df.empty for df in data_files.values()):
                 data_source = "database"
                 print("✅ Loaded data from PostgreSQL database")
@@ -128,7 +125,6 @@ def load_latest_data():
         except Exception as e:
             print(f"❌ Database load failed: {e}")
     
-   
     if data_source == "csv" or all(df.empty for df in data_files.values() if data_files):
         try:
             for key in ['air', 'fire', 'climate', 'economic', 'water']:
@@ -136,7 +132,6 @@ def load_latest_data():
                 if files:
                     latest_file = max(files, key=os.path.getctime)
                     data_files[key] = pd.read_csv(latest_file)
-                    # Mark as fallback data
                     data_files[key]._is_fallback = True
                     print(f"✅ Loaded {key} data from CSV")
                 else:
@@ -144,47 +139,55 @@ def load_latest_data():
         except Exception as e:
             print(f"❌ Error loading CSV data: {e}")
     
-
     for key in data_files:
         if not data_files[key].empty:
             data_files[key].attrs['data_source'] = data_source
     
     return data_files, data_source
 
+# --- UPDATED FUNCTION FOR 3D INTERACTIVE MAP (AIR QUALITY) ---
+# --- UPDATED FUNCTION FOR 3D INTERACTIVE MAP (AIR QUALITY) ---
 def create_air_quality_map(df):
     if df.empty:
         return None
-    color_map = {1: 'green', 2: 'yellow', 3: 'orange', 4: 'red', 5: 'purple'}
-    df['color'] = df['aqi'].map(color_map)
-    
-    fig = px.scatter_map(
-        df, lat='lat', lon='lon', hover_name='city',
+    df_clean = df.copy()
+    if 'aqi' in df_clean.columns:
+        df_clean['aqi'] = pd.to_numeric(df_clean['aqi'], errors='coerce').fillna(0)
+    else:
+        df_clean['aqi'] = 0
+    df_clean['aqi_size'] = (df_clean['aqi'] - df_clean['aqi'].min()).clip(lower=1)
+    fig = px.scatter_geo(
+        df_clean, lat='lat', lon='lon', hover_name='city',
         hover_data={'aqi': True, 'pm2_5': True, 'pm10': True},
-        color='aqi', color_continuous_scale=['green', 'yellow', 'orange', 'red', 'purple'],
-        size_max=15, zoom=1, height=500,
-        title="🌬️ Air Quality Index Across Cities"
+        color='aqi',
+        color_continuous_scale=['green', 'yellow', 'orange', 'red', 'purple'],
+        size='aqi_size', size_max=20,
+        projection="orthographic",
+        height=520,
+        title="  "
     )
-    fig.update_layout(
-        margin={"r":0,"t":50,"l":0,"b":0},
-        title_font_size=20,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)'
+    fig.update_geos(
+        showland=True, landcolor="lightgray",
+        showocean=True, oceancolor="lightblue",
+        showcountries=True, countrycolor="darkgray", # Changed color to be more prominent
+        projection_rotation=dict(lon=-20, lat=10, roll=0),
+        bgcolor='rgba(0,0,0,0)'
     )
+    fig.update_layout(margin={"r":0,"t":45,"l":0,"b":0}, title_font_size=18,
+                      plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
     return fig
+# -----------------------------------------------------------------
 
 def create_air_quality_charts(df):
-    """Create comprehensive air quality visualizations"""
     if df.empty:
         return None, None, None
     
     df_clean = df.copy()
     
-    # Handle missing values
     for col in ['aqi', 'pm2_5', 'pm10']:
         if col in df_clean.columns:
             df_clean[col] = df_clean[col].fillna(df_clean[col].mean())
     
-
     fig1 = px.bar(
         df_clean.sort_values('aqi', ascending=True), 
         x='aqi', y='city', 
@@ -196,10 +199,9 @@ def create_air_quality_charts(df):
     )
     fig1.update_layout(height=400, showlegend=False)
     
-    # PM2.5 vs PM10 Scatter - ensure positive values
     df_clean['pm2_5'] = df_clean['pm2_5'].clip(lower=0.1)
     df_clean['pm10'] = df_clean['pm10'].clip(lower=0.1)
-    df_clean['aqi_size'] = df_clean['aqi'].clip(lower=1)  # Ensure positive values for size
+    df_clean['aqi_size'] = df_clean['aqi'].clip(lower=1)
     
     fig2 = px.scatter(
         df_clean, x='pm2_5', y='pm10', 
@@ -209,7 +211,6 @@ def create_air_quality_charts(df):
     )
     fig2.update_layout(height=400)
     
-    # AQI Distribution
     fig3 = px.histogram(
         df_clean, x='aqi', nbins=20,
         title="📊 AQI Distribution",
@@ -219,118 +220,126 @@ def create_air_quality_charts(df):
     
     return fig1, fig2, fig3
 
+# --- UPDATED FUNCTION FOR 3D INTERACTIVE MAP (FIRE ALERTS) ---
+# --- UPDATED FUNCTION FOR 3D INTERACTIVE MAP (FIRE ALERTS) ---
 def create_fire_map(df):
     if df.empty:
         return None
-    if len(df) > 500:
-        df = df.sample(500)
-    
-
     df_clean = df.copy()
-    df_clean['confidence'] = pd.to_numeric(df_clean['confidence'], errors='coerce').fillna(50)
-    df_clean['frp'] = pd.to_numeric(df_clean['frp'], errors='coerce').fillna(1)
-    df_clean = df_clean.dropna(subset=['confidence', 'frp'])
-    
-    fig = px.scatter_map(
-        df_clean, lat='latitude', lon='longitude',
-        hover_data={'confidence': True, 'frp': True},
-        color='confidence', color_continuous_scale='Reds',
-        size='frp', size_max=10, zoom=1, height=500,
-        title="🔥 Active Fire Alerts"
-    )
-    fig.update_layout(
-        margin={"r":0,"t":50,"l":0,"b":0},
-        title_font_size=20
-    )
+    if 'confidence' in df_clean.columns:
+        df_clean['confidence'] = pd.to_numeric(df_clean['confidence'], errors='coerce').fillna(50)
+    else:
+        df_clean['confidence'] = 50
+    if 'frp' in df_clean.columns:
+        df_clean['frp'] = pd.to_numeric(df_clean['frp'], errors='coerce').fillna(1)
+    else:
+        df_clean['frp'] = 1
+    fig = px.scatter_geo(df_clean, lat='latitude', lon='longitude',
+                         hover_data={'confidence': True, 'frp': True},
+                         color='confidence', color_continuous_scale='Reds',
+                         size='frp', size_max=15,
+                         projection="orthographic",
+                         height=520,
+                         title="  ")
+    fig.update_geos(showland=True, landcolor="lightgray", showocean=True, oceancolor="lightblue",
+                    showcountries=True, countrycolor="darkgray", projection_rotation=dict(lon=-20, lat=10, roll=0), # Changed color to be more prominent
+                    bgcolor='rgba(0,0,0,0)')
+    fig.update_layout(margin={"r":0,"t":45,"l":0,"b":0}, title_font_size=18,
+                      plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
     return fig
+# -----------------------------------------------------------------
 
 def create_fire_charts(df):
-    """Create fire analytics charts"""
     if df.empty:
         return None, None
-    
-    # Create a clean copy
+
     df_clean = df.copy()
-    
-    # Clean numerical columns
+
+    # Ensure numeric columns
     for col in ['confidence', 'frp']:
         if col in df_clean.columns:
             df_clean[col] = pd.to_numeric(df_clean[col], errors='coerce')
-    
-  
-    df_clean = df_clean.dropna(subset=['confidence', 'frp'])
-    
 
-    df_clean['confidence'] = df_clean['confidence'].clip(0, 100)
-    df_clean['frp'] = df_clean['frp'].clip(0.1, 1000)  # Ensure positive values
-    
+    # Drop rows without required fields
+    df_clean = df_clean.dropna(
+        subset=['latitude', 'longitude', 'confidence', 'frp']
+    )
+
+    # 🔑 DISTINCT fires by location (same logic as your metric)
+    df_clean = df_clean.drop_duplicates(
+        subset=['latitude', 'longitude']
+    )
+
     if df_clean.empty:
         return None, None
-    
 
+    # Clip values for visualization
+    df_clean['confidence'] = df_clean['confidence'].clip(0, 100)
+    df_clean['frp'] = df_clean['frp'].clip(0.1, 1000)
+
+    # 🎯 Confidence distribution (counts DISTINCT fires)
     fig1 = px.histogram(
-        df_clean, x='confidence', nbins=20,
-        title="🎯 Fire Detection Confidence Distribution",
+        df_clean,
+        x='confidence',
+        nbins=20,
+        title="🎯 Fire Detection Confidence Distribution (Distinct Fires)",
         color_discrete_sequence=['#e74c3c']
     )
     fig1.update_layout(height=300)
-    
+
+    # 🔥 FRP vs Confidence (one point per fire)
     fig2 = px.scatter(
-        df_clean, x='confidence', y='frp',
-        title="🔥 Fire Radiative Power vs Detection Confidence",
-        labels={'frp': 'Fire Radiative Power (MW)', 'confidence': 'Detection Confidence (%)'}
+        df_clean,
+        x='confidence',
+        y='frp',
+        title="🔥 Fire Radiative Power vs Detection Confidence (Distinct Fires)",
+        labels={
+            'frp': 'Fire Radiative Power (MW)',
+            'confidence': 'Detection Confidence (%)'
+        }
     )
     fig2.update_layout(height=400)
-    
+
     return fig1, fig2
 
+
+# --- UPDATED FUNCTION FOR 3D INTERACTIVE MAP (CLIMATE DATA) ---
 def create_climate_map(df):
-    """Create interactive map of climate data"""
     if df.empty:
         return None
-    
     df_clean = df.copy()
-    df_clean['precipitation'] = df_clean['precipitation'].fillna(0)
-    df_clean['temperature_2m'] = df_clean['temperature_2m'].fillna(df_clean['temperature_2m'].mean())
-    
-
+    if 'temperature_2m' in df_clean.columns:
+        df_clean['temperature_2m'] = pd.to_numeric(df_clean['temperature_2m'], errors='coerce').fillna(df_clean['temperature_2m'].mean())
+    else:
+        df_clean['temperature_2m'] = 0
+    if 'precipitation' in df_clean.columns:
+        df_clean['precipitation'] = pd.to_numeric(df_clean['precipitation'], errors='coerce').fillna(0)
+    else:
+        df_clean['precipitation'] = 0
     df_clean['precipitation_size'] = df_clean['precipitation'] + 0.1
-    
-
-    fig = px.scatter_map(
-        df_clean,
-        lat='lat',
-        lon='lon',
-        hover_name='city',
-        hover_data={'temperature_2m': ':.1f', 'precipitation': ':.1f'},
-        color='temperature_2m',
-        color_continuous_scale='RdYlBu_r',
-        size='precipitation_size',
-        size_max=15,
-        zoom=1,
-        height=500,
-        title="🌤️ Temperature and Precipitation"
-    )
-    
-    fig.update_layout(
-        margin={"r":0,"t":50,"l":0,"b":0},
-        title_font_size=20
-    )
-    
+    fig = px.scatter_geo(df_clean, lat='lat', lon='lon', hover_name='city',
+                         hover_data={'temperature_2m': ':.1f', 'precipitation': ':.1f'},
+                         color='temperature_2m', color_continuous_scale='RdYlBu_r',
+                         size='precipitation_size', size_max=15,
+                         projection="orthographic", height=520,
+                         title="   ")
+    fig.update_geos(showland=True, landcolor="lightgray", showocean=True, oceancolor="lightblue",
+                    showcountries=True, countrycolor="gray", projection_rotation=dict(lon=-20, lat=10, roll=0),
+                    bgcolor='rgba(0,0,0,0)')
+    fig.update_layout(margin={"r":0,"t":45,"l":0,"b":0}, title_font_size=18,
+                      plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
     return fig
+# -----------------------------------------------------------------
 
 def create_climate_charts(df):
-    """Create climate visualization charts"""
     if df.empty:
         return None, None, None
     
- 
     df_clean = df.copy()
     
     df_clean['temperature_2m'] = df_clean['temperature_2m'].fillna(df_clean['temperature_2m'].mean())
     df_clean['precipitation'] = df_clean['precipitation'].fillna(0)
     
-    # Temperature bar chart
     fig1 = px.bar(
         df_clean.sort_values('temperature_2m', ascending=True),
         x='temperature_2m', y='city',
@@ -342,7 +351,6 @@ def create_climate_charts(df):
     )
     fig1.update_layout(height=400)
     
-    # Precipitation chart
     fig2 = px.bar(
         df_clean.sort_values('precipitation', ascending=True),
         x='precipitation', y='city',
@@ -354,13 +362,10 @@ def create_climate_charts(df):
     )
     fig2.update_layout(height=400)
     
-
     if 'solar_radiation' in df_clean.columns:
-        # Fill NaN values with mean or 0, then ensure all values are positive
         df_clean['solar_radiation'] = df_clean['solar_radiation'].fillna(df_clean['solar_radiation'].mean())
-        df_clean['solar_radiation'] = df_clean['solar_radiation'].clip(lower=0.1)  # Ensure positive values
+        df_clean['solar_radiation'] = df_clean['solar_radiation'].clip(lower=0.1)
         
-        # Check if we have valid solar radiation data after cleaning
         if df_clean['solar_radiation'].notna().any():
             fig3 = px.scatter(
                 df_clean, 
@@ -376,7 +381,6 @@ def create_climate_charts(df):
                 }
             )
         else:
-            # Fallback if no valid solar radiation data
             fig3 = px.scatter(
                 df_clean, 
                 x='temperature_2m', 
@@ -389,7 +393,6 @@ def create_climate_charts(df):
                 }
             )
     else:
-        # Create scatter plot without size parameter if solar radiation data is missing
         fig3 = px.scatter(
             df_clean, 
             x='temperature_2m', 
@@ -407,11 +410,9 @@ def create_climate_charts(df):
     return fig1, fig2, fig3
 
 def create_economic_charts(df):
-    """Create economic indicator visualizations"""
     if df.empty:
         return None, None
     
-    # Pivot the data
     pivot_df = df.pivot_table(
         index=['country_name', 'year'],
         columns='indicator_name',
@@ -419,7 +420,6 @@ def create_economic_charts(df):
         aggfunc='first'
     ).reset_index()
     
-    # GDP trend
     gdp_data = df[df['indicator_name'].str.contains('GDP', case=False, na=False)]
     if not gdp_data.empty:
         fig1 = px.line(
@@ -431,15 +431,21 @@ def create_economic_charts(df):
     else:
         fig1 = None
     
-    # Latest economic indicators by country
     latest_year = df['year'].max() if 'year' in df.columns else None
     if latest_year:
         latest_data = df[df['year'] == latest_year]
+        
+        # --- MODIFICATION START ---
         fig2 = px.bar(
-            latest_data, x='country_name', y='value', color='indicator_name',
-            title=f"📊 Economic Indicators ({latest_year})",
+            latest_data, 
+            x='country_name', 
+            y='value', 
+            color='country_name', # Changed from 'indicator_name' to 'country_name'
+            title=f"📊 Economic Indicators ({latest_year}) (Colored by Country)", # Updated title for clarity
             labels={'value': 'Indicator Value', 'country_name': 'Country'}
         )
+        # --- MODIFICATION END ---
+        
         fig2.update_layout(height=400, xaxis_tickangle=-45)
     else:
         fig2 = None
@@ -447,12 +453,10 @@ def create_economic_charts(df):
     return fig1, fig2
 
 def create_water_charts(df):
-    """Create water quality visualizations"""
     if df.empty:
         return None, None
     
     if 'water_quality_index' in df.columns:
-        # Water quality by city
         fig1 = px.bar(
             df.sort_values('water_quality_index', ascending=True),
             x='water_quality_index', y='city',
@@ -464,7 +468,6 @@ def create_water_charts(df):
         )
         fig1.update_layout(height=400)
         
-        # Water quality distribution
         fig2 = px.histogram(
             df, x='water_quality_index',
             title="📊 Water Quality Distribution",
@@ -477,7 +480,12 @@ def create_water_charts(df):
     return None, None
 
 def main():
-
+    # Initialize session state for refresh tracking
+    if 'refresh_count' not in st.session_state:
+        st.session_state.refresh_count = 0
+    if 'last_refresh' not in st.session_state:
+        st.session_state.last_refresh = datetime.now()
+    
     st.markdown(
         '''
         <h1 class="main-header">
@@ -488,6 +496,35 @@ def main():
         unsafe_allow_html=True
     )
     st.markdown("*Real-time environmental monitoring across Africa*")
+    
+    # Auto-refresh controls in sidebar
+    with st.sidebar:
+        st.header("🔄 Auto-Refresh Settings")
+        
+        auto_refresh = st.checkbox("Enable Auto-Refresh", value=True)
+        
+        if auto_refresh:
+            refresh_interval = st.selectbox(
+                "Refresh Interval",
+                options=[5, 10, 30, 60, 120, 300, 600],
+                format_func=lambda x: f"{x} seconds ({x//60} min)" if x >= 60 else f"{x} seconds",
+                index=2  # Default to 120 seconds
+            )
+            
+            st.markdown(
+                f'<div class="refresh-indicator">🔄 Auto-refreshing every {refresh_interval}s</div>',
+                unsafe_allow_html=True
+            )
+            
+            # Display refresh stats
+            # st.metric("Refresh Count", st.session_state.refresh_count)
+            # st.caption(f"Last refresh: {st.session_state.last_refresh.strftime('%H:%M:%S')}")
+        
+        # Manual refresh button
+        if st.button("🔄 Refresh Now"):
+            st.session_state.refresh_count += 1
+            st.session_state.last_refresh = datetime.now()
+            st.rerun()
     
     # Load data with progress indicator
     with st.spinner("🌍 Loading environmental data..."):
@@ -507,25 +544,49 @@ def main():
     with st.sidebar:
         st.header("📊 Dashboard Stats")
         
-        # Data source badge
         if data_source == "database":
             st.markdown('<div class="data-source-badge db-badge">📊 PostgreSQL Database</div>', unsafe_allow_html=True)
         else:
             st.markdown('<div class="data-source-badge csv-badge">📁 CSV Files (Fallback)</div>', unsafe_allow_html=True)
         
         if not air_df.empty:
-            st.metric("🏙️ Cities Monitored", len(air_df), delta=None)
+            distinct_cities = air_df['city'].dropna().nunique()
+            st.metric("🏙️ Cities Monitored", distinct_cities)
             worst_air = air_df.loc[air_df['aqi'].idxmax()]
             st.metric("⚠️ Worst AQI", f"{worst_air['city']}", delta=f"AQI: {worst_air['aqi']}")
             
         if not fire_df.empty:
-            st.metric("🔥 Active Fires", len(fire_df), delta=None)
-            avg_confidence = fire_df['confidence'].mean()
-            st.metric("🎯 Avg Confidence", f"{avg_confidence:.1f}%", delta=None)
-            
+            # Added a try/except to handle potential non-numeric data in sidebar metrics gracefully
+            try:
+                numeric_confidence = pd.to_numeric(fire_df['confidence'], errors='coerce').dropna()
+                avg_confidence = numeric_confidence.mean() if not numeric_confidence.empty else 0
+                distinct_fire_locations = (
+                    fire_df[['latitude', 'longitude']]
+                    .dropna()
+                    .drop_duplicates()
+                    .shape[0]
+                )
+
+                st.metric("🔥 Active Fires", distinct_fire_locations)
+                st.metric("🎯 Avg Confidence", f"{avg_confidence:.1f}%", delta=None)
+            except:
+                st.metric("🔥 Active Fires", len(fire_df), delta=None)
+                st.caption("Avg Confidence N/A")
+
         if not climate_df.empty:
-            avg_temp = climate_df['temperature_2m'].mean()
-            st.metric("🌡️ Avg Temperature", f"{avg_temp:.1f}°C", delta=None)
+            try:
+                # Clean temperature column
+                temp_col = climate_df['temperature_2m'].astype(str).str.replace('°C', '', regex=False)
+                numeric_temp = pd.to_numeric(temp_col, errors='coerce').dropna()
+                
+                # Fill missing with mean (optional)
+                numeric_temp = numeric_temp.fillna(numeric_temp.mean())
+                
+                avg_temp = numeric_temp.mean() if not numeric_temp.empty else 0
+                st.metric("🌡️ Avg Temperature", f"{avg_temp:.1f}°C", delta=None)
+            except Exception as e:
+                st.caption("Avg Temperature N/A")
+
             
         st.markdown("---")
         st.markdown("### 🔄 Last Updated")
@@ -540,12 +601,11 @@ def main():
         st.header("🌬️ Air Quality Analysis")
         
         if not air_df.empty:
-            # Map
+            # The map here is now 3D interactive!
             air_map = create_air_quality_map(air_df)
             if air_map:
                 st.plotly_chart(air_map, use_container_width=True)
             
-            # Charts
             col1, col2 = st.columns(2)
             air_charts = create_air_quality_charts(air_df)
             
@@ -566,12 +626,11 @@ def main():
         st.header("🔥 Fire Alert Analysis")
         
         if not fire_df.empty:
-            # Map
+            # The map here is now 3D interactive!
             fire_map = create_fire_map(fire_df)
             if fire_map:
                 st.plotly_chart(fire_map, use_container_width=True)
             
-            # Charts
             col1, col2 = st.columns(2)
             fire_charts = create_fire_charts(fire_df)
             
@@ -582,12 +641,28 @@ def main():
                     st.plotly_chart(fire_charts[1], use_container_width=True)
             
             col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("🔥 Total Alerts", len(fire_df))
-            with col2:
-                st.metric("🎯 Avg Confidence", f"{fire_df['confidence'].mean():.1f}%")
-            with col3:
-                st.metric("⚡ Avg FRP", f"{fire_df['frp'].mean():.1f} MW")
+            # Ensure fire data metrics are safe if not numeric
+            try:
+                with col1:
+                    distinct_fire_locations = (
+                    fire_df[['latitude', 'longitude']]
+                    .dropna()
+                    .drop_duplicates()
+                    .shape[0]
+                    )
+                    st.metric("🔥 Total Alerts", distinct_fire_locations)
+                
+                numeric_confidence = pd.to_numeric(fire_df['confidence'], errors='coerce').dropna()
+                avg_confidence = numeric_confidence.mean() if not numeric_confidence.empty else 0
+                with col2:
+                    st.metric("🎯 Avg Confidence", f"{avg_confidence:.1f}%")
+
+                numeric_frp = pd.to_numeric(fire_df['frp'], errors='coerce').dropna()
+                avg_frp = numeric_frp.mean() if not numeric_frp.empty else 0
+                with col3:
+                    st.metric("⚡ Avg FRP", f"{avg_frp:.1f} MW")
+            except Exception as e:
+                st.error(f"Error displaying fire metrics: {e}")
                 
             with st.expander("📋 View Raw Data"):
                 st.dataframe(fire_df.head(100), use_container_width=True)
@@ -598,12 +673,11 @@ def main():
         st.header("🌤️ Climate Analysis")
         
         if not climate_df.empty:
-            # Map
+            # The map here is now 3D interactive!
             climate_map = create_climate_map(climate_df)
             if climate_map:
                 st.plotly_chart(climate_map, use_container_width=True)
             
-            # Charts
             climate_charts = create_climate_charts(climate_df)
             
             if climate_charts[0] and climate_charts[1]:
@@ -660,7 +734,6 @@ def main():
         else:
             st.warning("⚠️ No water quality data available")
 
-    # Footer
     st.markdown("---")
     st.markdown(
         f"<div style='text-align: center; color: #7f8c8d;'>"
@@ -670,6 +743,13 @@ def main():
         f"</div>", 
         unsafe_allow_html=True
     )
+    
+    # Auto-refresh mechanism
+    if auto_refresh:
+        time.sleep(refresh_interval)
+        st.session_state.refresh_count += 1
+        st.session_state.last_refresh = datetime.now()
+        st.rerun()
 
 if __name__ == "__main__":
-    main()
+    main()  

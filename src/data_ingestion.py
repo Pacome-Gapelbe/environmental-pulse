@@ -202,14 +202,14 @@ class EnvironmentalDataCollector:
 
         return pd.DataFrame(water_data)
 
-    def save_all_data_to_db(self, air_df, fire_df, climate_df, economic_df, water_df):
+    def save_all_data_to_db(self,climate_df, economic_df, water_df):
         """Save all collected data to PostgreSQL database"""
         try:
-            if not air_df.empty:
-                self.db_manager.insert_air_quality_data(air_df)
+            # if not air_df.empty:
+            #     self.db_manager.insert_air_quality_data(air_df)
             
-            if not fire_df.empty:
-                self.db_manager.insert_fire_data(fire_df)
+            # if not fire_df.empty:
+            #     self.db_manager.insert_fire_data(fire_df)
             
             if not climate_df.empty:
                 self.db_manager.insert_climate_data(climate_df)
@@ -232,18 +232,18 @@ class EnvironmentalDataCollector:
         self.db_manager.close()
 
 
-def save_data_to_csv(air_df, fire_df, climate_df, economic_df, water_df):
+def save_data_to_csv(climate_df, economic_df, water_df):
     """Save data to CSV files for backward compatibility"""
     os.makedirs(RAW_DATA_PATH, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    if not air_df.empty:
-        air_df.to_csv(f"{RAW_DATA_PATH}/air_quality_{timestamp}.csv", index=False)
-        print(f"💾 Saved air quality data to CSV: {len(air_df)} records")
+    # if not air_df.empty:
+    #     air_df.to_csv(f"{RAW_DATA_PATH}/air_quality_{timestamp}.csv", index=False)
+    #     print(f"💾 Saved air quality data to CSV: {len(air_df)} records")
     
-    if not fire_df.empty:
-        fire_df.to_csv(f"{RAW_DATA_PATH}/fires_{timestamp}.csv", index=False)
-        print(f"💾 Saved fire data to CSV: {len(fire_df)} records")
+    # if not fire_df.empty:
+    #     fire_df.to_csv(f"{RAW_DATA_PATH}/fires_{timestamp}.csv", index=False)
+    #     print(f"💾 Saved fire data to CSV: {len(fire_df)} records")
     
     if not climate_df.empty:
         climate_df.to_csv(f"{RAW_DATA_PATH}/climate_{timestamp}.csv", index=False)
@@ -263,34 +263,32 @@ def main():
     print("🌍 Starting Environmental Data Collection...")
 
     try:
-        air_quality_df = collector.get_air_quality_data(MONITORED_CITIES)
-        fire_df = collector.get_nasa_fire_data()
+        # air_quality_df = collector.get_air_quality_data(MONITORED_CITIES)
+        # fire_df = collector.get_nasa_fire_data()
         climate_df = collector.get_climate_data(MONITORED_CITIES)
         economic_df = collector.get_economic_data()
         water_df = collector.get_water_quality_data()
 
-        collector.save_all_data_to_db(air_quality_df, fire_df, climate_df, economic_df, water_df)
+        collector.save_all_data_to_db( climate_df, economic_df, water_df)
 
-        save_data_to_csv(air_quality_df, fire_df, climate_df, economic_df, water_df)
+        save_data_to_csv( climate_df, economic_df, water_df)
 
         print("\n✅ Data collection and storage complete!")
         print("📊 Data Summary:")
-        print(f"   Air Quality Records: {len(air_quality_df)}")
-        print(f"   Fire Alert Records: {len(fire_df)}")
         print(f"   Climate Records: {len(climate_df)}")
         print(f"   Economic Records: {len(economic_df)}")
         print(f"   Water Quality Records: {len(water_df)}")
 
     except Exception as e:
         try:
-            save_data_to_csv(air_quality_df, fire_df, climate_df, economic_df, water_df)
+            save_data_to_csv( climate_df, economic_df, water_df)
             print("💾 Data saved to CSV as fallback")
         except Exception as csv_error:
             print(f"❌ CSV fallback also failed: {csv_error}")
 
     finally:
         collector.close_db_connection()
-    return air_quality_df, fire_df, climate_df, economic_df, water_df
+    return climate_df, economic_df, water_df
 
 
 if __name__ == "__main__":

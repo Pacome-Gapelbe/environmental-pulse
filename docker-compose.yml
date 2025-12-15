@@ -17,7 +17,7 @@ x-airflow-common: &airflow-common
     DB_NAME: envpulse
     DB_USER: postgres
     DB_PASSWORD: postgres
-    # API Keys
+    # API Keys (populate via .env)
     OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
     NASA_FIRMS_API_KEY: ${NASA_FIRMS_API_KEY}
   volumes:
@@ -28,7 +28,6 @@ x-airflow-common: &airflow-common
     - /var/run/docker.sock:/var/run/docker.sock
     - .:/opt/airflow/environmental-pulse
   user: "${AIRFLOW_UID:-50000}:0"
-  
 
 services:
   # Airflow metadata DB
@@ -48,7 +47,35 @@ services:
       timeout: 30s
       retries: 5
 
-  # Environmental DB
+  # Zookeeper and Kafka (for local dev)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      # Single listener for container-to-container communication
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: ["CMD-SHELL", "echo > /dev/tcp/localhost/9092 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Environmental DB (used by producers/consumers/dashboard)
   postgres:
     image: postgres:14
     environment:
@@ -66,7 +93,7 @@ services:
       timeout: 30s
       retries: 5
 
-  # Airflow
+  # Airflow initialization and services
   airflow-init:
     <<: *airflow-common
     command: version
@@ -98,6 +125,7 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  # legacy ETL container (your existing batch ETL; optional)
   python-etl:
     build: .
     container_name: etl-service
@@ -124,7 +152,7 @@ services:
     volumes:
       - .:/app
 
-  # Streamlit dashboard
+  # Streamlit dashboard (unchanged)
   streamlit-dashboard:
     build: .
     container_name: streamlit-dashboard
@@ -142,87 +170,54 @@ services:
     volumes:
       - .:/app
 
+  # Kafka producer container (streams air quality & fires to Kafka)
+  kafka-producer:
+    build: .
+    container_name: kafka-producer
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC_AIR=air_quality
+      - KAFKA_TOPIC_FIRE=fire_alerts
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - FIRE_API_URL=${FIRE_API_URL}
+      - CITIES_JSON=${CITIES_JSON}
+      - POLL_INTERVAL_SECONDS=${POLL_INTERVAL_SECONDS:-30}
+    volumes:
+      - .:/app
+    command: >
+      sh -c "
+        echo '🚀 Starting Kafka producer';
+        python src/kafka_producer.py
+      "
+    restart: unless-stopped
+
+  kafka-consumer:
+    build: .
+    container_name: kafka-consumer
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPICS=air_quality,fire_alerts
+      - DATABASE_DSN=postgresql://postgres:postgres@postgres:5432/envpulse
+      - KAFKA_CONSUMER_GROUP=env-pulse-consumer
+    volumes:
+      - .:/app
+    command: >
+      sh -c "
+        echo '⏳ Waiting for Postgres and Kafka...';
+        until pg_isready -h postgres -p 5432 -U postgres; do sleep 1; done;
+        echo '✅ Dependencies ready, starting consumer';
+        python src/kafka_consumer_to_postgres.py
+      "
+    restart: unless-stopped
+
 volumes:
   postgres-airflow-data:
   postgres_data:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# version: "3"
-
-# services:
-#   postgres:
-#     image: postgres:14
-#     container_name: postgres-db-pulse
-#     environment:
-#       POSTGRES_USER: postgres
-#       POSTGRES_PASSWORD: postgres
-#       POSTGRES_DB: envpulse
-#     ports:
-#       - "5436:5432"
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-
-#   python-etl:
-#     build: .
-#     container_name: etl-service
-#     command: ["python", "src/data_ingestion.py"]
-#     depends_on:
-#       - postgres
-#     environment:
-#       - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
-#       - NASA_FIRMS_API_KEY=${NASA_FIRMS_API_KEY}
-#       - DB_HOST=postgres
-#       - DB_PORT=5432
-#       - DB_USER=postgres
-#       - DB_PASSWORD=postgres
-#       - DB_NAME=envpulse
-#     volumes:
-#       - .:/app
-
-#   streamlit-dashboard:
-#     build: .
-#     container_name: streamlit-dashboard
-#     command: ["streamlit", "run", "src/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
-#     ports:
-#       - "8501:8501"
-#     depends_on:
-#       - postgres
-#     environment:
-#       - DB_HOST=postgres
-#       - DB_PORT=5432
-#       - DB_USER=postgres
-#       - DB_PASSWORD=postgres
-#       - DB_NAME=envpulse
-#     volumes:
-#       - .:/app
-
-# volumes:
-#   postgres_data:

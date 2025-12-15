@@ -18,15 +18,14 @@ default_args = {
 }
 
 def run_data_ingestion():
-    """Run your data ingestion script"""
     try:
         from src.data_ingestion import main as collect_data
         print("Starting data collection...")
-        air_df, fire_df, climate_df, economic_df, water_df = collect_data()
+        climate_df, economic_df, water_df = collect_data()
         
         print(f"✅ Data collection successful!")
-        print(f"   Air Quality: {len(air_df)} records")
-        print(f"   Fire Alerts: {len(fire_df)} records") 
+        # print(f"   Air Quality: {len(air_df)} records")
+        # print(f"   Fire Alerts: {len(fire_df)} records") 
         print(f"   Climate Data: {len(climate_df)} records")
         print(f"   Economic Data: {len(economic_df)} records")
         print(f"   Water Quality: {len(water_df)} records")
@@ -37,7 +36,6 @@ def run_data_ingestion():
         raise
 
 def check_database_connection():
-    """Verify database is accessible"""
     try:
         from src.database import DatabaseManager
         db = DatabaseManager()
@@ -58,7 +56,7 @@ with DAG(
     'environmental_data_pipeline',
     default_args=default_args,
     description='Collect and store environmental data for Africa',
-    schedule_interval=timedelta(hours=1),  # Run every hour
+    schedule_interval=timedelta(hours=1), 
     start_date=datetime(2024, 1, 1),
     catchup=False,
     tags=['environment', 'africa', 'data-pipeline'],
@@ -78,5 +76,5 @@ with DAG(
     
     end = EmptyOperator(task_id='end')
     
-    # Set up dependencies
+   
     start >> check_db_task >> collect_data_task >> end
